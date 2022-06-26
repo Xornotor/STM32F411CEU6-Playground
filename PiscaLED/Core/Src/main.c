@@ -41,13 +41,18 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+int debounce_factor = 10;
+int active = 1;
+int btn_count = 0;
+int btn_prev = 1;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
+
+void debounceKey(GPIO_TypeDef *, uint32_t);
 
 /* USER CODE END PFP */
 
@@ -86,34 +91,9 @@ int main(void)
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
 
-  int debounce_factor = 10;
-  int active = 1;
-  int btn_count = 0;
-  int btn_prev = 1;
+
   uint32_t tmpTick;
   uint32_t prevTick = HAL_GetTick();
-
-  void debounceKey(void){
-	  int leitura = HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin);
-	  if(leitura != btn_prev){
-		  if(btn_count <= debounce_factor){
-			  btn_count++;
-		  }else{
-			  if(leitura == 0){
-				  if(active == 0){
-					  active = 1;
-				  }else{
-					  active = 0;
-				  }
-			  }else{
-				  btn_count = 0;
-			  }
-			  btn_prev = leitura;
-		  }
-	  }else{
-		  btn_count = 0;
-	  }
-  }
 
   /* USER CODE END 2 */
 
@@ -121,7 +101,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  debounceKey();
+	  debounceKey(KEY_GPIO_Port, KEY_Pin);
 	  if(active != 0){
 		  tmpTick = HAL_GetTick();
 		  if(tmpTick - prevTick > 300){
@@ -248,6 +228,28 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+void debounceKey(GPIO_TypeDef * port, uint32_t pin){
+	  int leitura = HAL_GPIO_ReadPin(KEY_GPIO_Port, KEY_Pin);
+	  if(leitura != btn_prev){
+		  if(btn_count <= debounce_factor){
+			  btn_count++;
+		  }else{
+			  if(leitura == 0){
+				  if(active == 0){
+					  active = 1;
+				  }else{
+					  active = 0;
+				  }
+			  }else{
+				  btn_count = 0;
+			  }
+			  btn_prev = leitura;
+		  }
+	  }else{
+		  btn_count = 0;
+	  }
+}
 
 /* USER CODE END 4 */
 
